@@ -54,23 +54,25 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     // Logo
                     Container(
-                      width: AppDimensions.logoSize,
-                      height: AppDimensions.logoSize,
-                      decoration: BoxDecoration(
-                        color: AppColors.borderPrimary,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppColors.primaryOrange,
-                          width: 2,
+                      width: 60,
+                      height: 60,
+                      child: ClipOval(
+                        child: Image.asset(
+                          'assets/images/newlogo.png',
+                          width: 56,
+                          height: 56,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(
+                              Icons.sports_soccer,
+                              color: AppColors.primaryOrange,
+                              size: 30,
+                            );
+                          },
                         ),
                       ),
-                      child: const Icon(
-                        Icons.sports_soccer,
-                        color: AppColors.primaryOrange,
-                        size: AppDimensions.iconSizeL,
-                      ),
                     ),
-                    const SizedBox(height: AppDimensions.spacingL),
+                    const SizedBox(height: AppDimensions.spacingM),
 
                     // App Name
                     ShaderMask(
@@ -85,19 +87,22 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: AppDimensions.spacingXL),
+                    const SizedBox(height: AppDimensions.spacingL),
 
                     // Welcome Back Title
                     const Text('Welcome Back', style: AppTextStyles.heading2),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
 
                     // Subtitle
-                    const Text(
-                      'Sign in to your Sports Social account to connect with\nathletes, find local games, and build your sports\ncommunity.',
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.bodyMedium,
+                    SizedBox(
+                      width: 280,
+                      child: const Text(
+                        'Sign in to your Sports Social account to connect with athletes, find local games, and build your sports community.',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.bodyMedium,
+                      ),
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 32),
 
                     // Email Field
                     TextFormField(
@@ -196,7 +201,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: AppDimensions.spacingM),
+                    const SizedBox(height: AppDimensions.spacingS),
 
                     // Forgot Password Link
                     Align(
@@ -221,7 +226,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: AppDimensions.spacingXL),
+                    const SizedBox(height: AppDimensions.spacingS),
 
                     // Sign In Button
                     SizedBox(
@@ -297,7 +302,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: AppDimensions.spacingXL),
+                    const SizedBox(height: AppDimensions.spacingS),
 
                     // Footer Links
                     Wrap(
@@ -305,25 +310,64 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         TextButton(
                           onPressed: () {},
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
                           child: const Text(
                             'Privacy Policy',
-                            style: AppTextStyles.bodySmall,
+                            style: TextStyle(
+                              color: AppColors.textTertiary,
+                              fontSize: 10,
+                              fontWeight: AppTextStyles.fontWeightNormal,
+                            ),
                           ),
                         ),
-                        const Text(' • ', style: AppTextStyles.bodySmall),
+                        const Text(
+                          ' • ',
+                          style: TextStyle(
+                            color: AppColors.textTertiary,
+                            fontSize: 10,
+                          ),
+                        ),
                         TextButton(
                           onPressed: () {},
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
                           child: const Text(
                             'Terms of Service',
-                            style: AppTextStyles.bodySmall,
+                            style: TextStyle(
+                              color: AppColors.textTertiary,
+                              fontSize: 10,
+                              fontWeight: AppTextStyles.fontWeightNormal,
+                            ),
                           ),
                         ),
-                        const Text(' • ', style: AppTextStyles.bodySmall),
+                        const Text(
+                          ' • ',
+                          style: TextStyle(
+                            color: AppColors.textTertiary,
+                            fontSize: 10,
+                          ),
+                        ),
                         TextButton(
                           onPressed: () {},
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
                           child: const Text(
                             'About Us',
-                            style: AppTextStyles.bodySmall,
+                            style: TextStyle(
+                              color: AppColors.textTertiary,
+                              fontSize: 10,
+                              fontWeight: AppTextStyles.fontWeightNormal,
+                            ),
                           ),
                         ),
                       ],
