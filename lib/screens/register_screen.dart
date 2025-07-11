@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../constants/app_constants.dart';
+import '../services/api_service.dart';
+import '../models/user.dart';
+import 'home_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -17,11 +20,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _bioController = TextEditingController();
   final _sportsController = TextEditingController();
   final _tagsController = TextEditingController();
-  
+
   bool _isPasswordObscured = true;
   bool _isConfirmPasswordObscured = true;
   bool _agreeToTerms = false;
   bool _showPasswordRequirements = false;
+  bool _isLoading = false;
 
   // Password strength tracking
   bool _hasMinLength = false;
@@ -46,12 +50,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _hasMinLength = password.length >= 6;
       _hasUppercase = password.contains(RegExp(r'[A-Z]'));
       _hasNumber = password.contains(RegExp(r'[0-9]'));
-      
+
       int strengthCount = 0;
       if (_hasMinLength) strengthCount++;
       if (_hasUppercase) strengthCount++;
       if (_hasNumber) strengthCount++;
-      
+
       _passwordStrength = strengthCount / 3;
     });
   }
@@ -66,6 +70,55 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (_passwordStrength <= 0.33) return 'Weak';
     if (_passwordStrength <= 0.66) return 'Medium';
     return 'Strong';
+  }
+
+  Future<void> _register() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await ApiService.register(
+        username: _usernameController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        bio: _bioController.text.trim().isEmpty
+            ? null
+            : _bioController.text.trim(),
+        sports: _sportsController.text.trim().isEmpty
+            ? null
+            : _sportsController.text.trim(),
+        tags: _tagsController.text.trim().isEmpty
+            ? null
+            : _tagsController.text.trim(),
+      );
+
+      // Registration successful
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      }
+    } catch (e) {
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceFirst('ApiException: ', '')),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -303,7 +356,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
 
                     // Password Strength Indicator
-                    if (_showPasswordRequirements && _passwordController.text.isNotEmpty) ...[
+                    if (_showPasswordRequirements &&
+                        _passwordController.text.isNotEmpty) ...[
                       const SizedBox(height: 8),
                       Row(
                         children: [
@@ -413,7 +467,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           onPressed: () {
                             setState(() {
-                              _isConfirmPasswordObscured = !_isConfirmPasswordObscured;
+                              _isConfirmPasswordObscured =
+                                  !_isConfirmPasswordObscured;
                             });
                           },
                         ),
@@ -552,27 +607,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           child: Padding(
                             padding: const EdgeInsets.only(top: 12),
                             child: RichText(
-                              text: TextSpan(
+                              text: const TextSpan(
                                 style: AppTextStyles.bodySmall,
                                 children: [
-                                  const TextSpan(
+                                  TextSpan(
                                     text: 'I have read and agree to the ',
-                                    style: TextStyle(color: AppColors.textSecondary),
+                                    style: TextStyle(
+                                      color: AppColors.textSecondary,
+                                    ),
                                   ),
                                   TextSpan(
                                     text: 'Terms and Conditions',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: AppColors.primaryOrange,
                                       decoration: TextDecoration.underline,
                                     ),
                                   ),
-                                  const TextSpan(
+                                  TextSpan(
                                     text: ' and ',
-                                    style: TextStyle(color: AppColors.textSecondary),
+                                    style: TextStyle(
+                                      color: AppColors.textSecondary,
+                                    ),
                                   ),
                                   TextSpan(
                                     text: 'Privacy Policy',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: AppColors.primaryOrange,
                                       decoration: TextDecoration.underline,
                                     ),
@@ -592,9 +651,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       height: AppDimensions.buttonHeight,
                       child: Container(
                         decoration: BoxDecoration(
-                          gradient: _agreeToTerms
+                          gradient: _agreeToTerms && !_isLoading
                               ? AppColors.primaryGradient
-                              : LinearGradient(
+                              : const LinearGradient(
                                   colors: [
                                     AppColors.textTertiary,
                                     AppColors.textTertiary,
@@ -605,19 +664,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ),
                         child: ElevatedButton(
-                          onPressed: _agreeToTerms
-                              ? () {
-                                  if (_formKey.currentState!.validate()) {
-                                    // TODO: Implement registration functionality
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Registration functionality coming soon',
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                }
+                          onPressed: _agreeToTerms && !_isLoading
+                              ? _register
                               : null,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,
@@ -628,14 +676,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                             ),
                           ),
-                          child: const Text(
-                            'Create Account',
-                            style: TextStyle(
-                              fontSize: AppTextStyles.fontSizeM,
-                              fontWeight: AppTextStyles.fontWeightSemiBold,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                              : const Text(
+                                  'Create Account',
+                                  style: TextStyle(
+                                    fontSize: AppTextStyles.fontSizeM,
+                                    fontWeight:
+                                        AppTextStyles.fontWeightSemiBold,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
                         ),
                       ),
                     ),

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../constants/app_constants.dart';
+import '../services/api_service.dart';
+import '../models/user.dart';
 import 'register_screen.dart';
+import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,12 +17,54 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isObscured = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await ApiService.login(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      // Login successful
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const HomeScreen(),
+          ),
+        );
+      }
+    } catch (e) {
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceFirst('ApiException: ', '')),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -90,20 +135,23 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: AppDimensions.spacingL),
 
-                    // Welcome Back Title
-                    const Text('Welcome Back', style: AppTextStyles.heading2),
+                    // Title
+                    const Text(
+                      'Welcome Back',
+                      style: AppTextStyles.heading2,
+                    ),
                     const SizedBox(height: 8),
 
                     // Subtitle
-                    SizedBox(
-                      width: 280,
-                      child: const Text(
+                    const SizedBox(
+                      width: 300,
+                      child: Text(
                         'Sign in to your Sports Social account to connect with athletes, find local games, and build your sports community.',
                         textAlign: TextAlign.center,
                         style: AppTextStyles.bodyMedium,
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
 
                     // Email Field
                     TextFormField(
@@ -196,9 +244,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your password';
                         }
-                        if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
-                        }
                         return null;
                       },
                     ),
@@ -209,12 +254,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {
-                          // TODO: Implement forgot password functionality
+                          // TODO: Implement forgot password
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text(
-                                'Forgot password functionality coming soon',
-                              ),
+                              content: Text('Forgot password feature coming soon'),
                             ),
                           );
                         },
@@ -222,12 +265,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           'Forgot your password?',
                           style: TextStyle(
                             color: AppColors.primaryOrange,
+                            fontSize: AppTextStyles.fontSizeS,
                             fontWeight: AppTextStyles.fontWeightMedium,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: AppDimensions.spacingS),
+                    const SizedBox(height: AppDimensions.spacingM),
 
                     // Sign In Button
                     SizedBox(
@@ -241,18 +285,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         child: ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              // TODO: Implement sign in functionality
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Sign in functionality coming soon',
-                                  ),
-                                ),
-                              );
-                            }
-                          },
+                          onPressed: _isLoading ? null : _login,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,
                             shadowColor: Colors.transparent,
@@ -262,14 +295,25 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                           ),
-                          child: const Text(
-                            'Sign In',
-                            style: TextStyle(
-                              fontSize: AppTextStyles.fontSizeM,
-                              fontWeight: AppTextStyles.fontWeightSemiBold,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                              : const Text(
+                                  'Sign In',
+                                  style: TextStyle(
+                                    fontSize: AppTextStyles.fontSizeM,
+                                    fontWeight: AppTextStyles.fontWeightSemiBold,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
                         ),
                       ),
                     ),
