@@ -1,6 +1,6 @@
 class ApiConfig {
   // Replace with your actual server URL
-  static const String baseUrl = 'http://localhost:8000'; // For development
+  static const String baseUrl = 'http://10.0.2.2:8000'; // For Android emulator
   // static const String baseUrl = 'https://your-production-url.com'; // For production
 
   // API Endpoints

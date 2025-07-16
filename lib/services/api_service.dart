@@ -156,12 +156,24 @@ class ApiService {
   }
   
   static Future<Map<String, dynamic>> sendOtp({
+    required String username,
     required String email,
+    required String password,
+    String? bio,
+    List<String>? sports,
+    List<String>? tags,
   }) async {
     return await _makeRequest(
       'POST',
       ApiConfig.sendOtpEndpoint,
-      body: {'email': email},
+      body: {
+        'username': username,
+        'email': email,
+        'password': password,
+        if (bio != null && bio.isNotEmpty) 'bio': bio,
+        'sports': sports ?? [],
+        'tags': tags ?? [],
+      },
     );
   }
   

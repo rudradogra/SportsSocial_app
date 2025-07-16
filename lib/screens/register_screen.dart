@@ -3,6 +3,7 @@ import '../constants/app_constants.dart';
 import '../services/api_service.dart';
 import '../models/user.dart';
 import 'home_screen.dart';
+import 'otp_verification_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -80,26 +81,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     try {
-      final response = await ApiService.register(
+      // Prepare sports and tags as arrays
+      List<String> sportsList = _sportsController.text.trim().isEmpty
+          ? []
+          : _sportsController.text.trim().split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+      List<String> tagsList = _tagsController.text.trim().isEmpty
+          ? []
+          : _tagsController.text.trim().split(',').map((t) => t.trim()).where((t) => t.isNotEmpty).toList();
+
+      final response = await ApiService.sendOtp(
         username: _usernameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text,
-        bio: _bioController.text.trim().isEmpty
-            ? null
-            : _bioController.text.trim(),
-        sports: _sportsController.text.trim().isEmpty
-            ? null
-            : _sportsController.text.trim(),
-        tags: _tagsController.text.trim().isEmpty
-            ? null
-            : _tagsController.text.trim(),
+        bio: _bioController.text.trim().isEmpty ? null : _bioController.text.trim(),
+        sports: sportsList,
+        tags: tagsList,
       );
 
-      // Registration successful
+      // OTP sent successfully
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          MaterialPageRoute(
+            builder: (context) => OtpVerificationScreen(
+              email: _emailController.text.trim(),
+              username: _usernameController.text.trim(),
+              password: _passwordController.text,
+              bio: _bioController.text.trim(),
+              sports: sportsList,
+              tags: tagsList,
+            ),
+          ),
         );
       }
     } catch (e) {
